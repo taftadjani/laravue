@@ -1,16 +1,11 @@
 <template>
 <div>
-    <!-- Button trigger modal -->
-    <button type="button" class="btn btn-primary my-3" data-toggle="modal" data-target="#addTaskModal">
-        Ajouter une tache
-    </button>
-
     <!-- Modal -->
-    <div class="modal fade" id="addTaskModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal fade" id="editTaskModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+                    <h5 class="modal-title" id="exampleModalLabel">Edit Modal title</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -19,13 +14,13 @@
                     <form>
                         <div class="form-group">
                             <label for="name">Nom de la tâche</label>
-                            <textarea name="name" rows="4" class="form-control" v-model="name"></textarea>
+                            <textarea name="name" rows="4" class="form-control" v-if="taskToEdit" v-model="taskToEdit.name"></textarea>
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    <button class="btn btn-success" type="submit" @click.prevent="storeTask" data-dismiss="modal">Créer ma tâche</button>
+                    <button class="btn btn-success" type="submit" @click.prevent="update" data-dismiss="modal">Enregistrer</button>
                 </div>
             </div>
         </div>
@@ -35,24 +30,17 @@
 
 <script>
 export default {
-    data() {
-        return {
-            name: null
-        }
-    },
+    props: ['taskToEdit'],
     methods: {
-        storeTask() {
-            axios.post('http://localhost/laravel-vueJS/public/tasksList', {
-                    name: this.name
+        update() {
+            axios.patch('http://localhost/laravel-vueJS/public/tasks/edit/' + this.taskToEdit.id, {
+                    name: this.taskToEdit.name
                 })
-                .then(response => this.$emit('task-added', response))
+                .then(response => {
+                    this.$emit('task-updated', response)
+                })
                 .catch(err => console.log(err))
-            this.name = null
         }
     }
 }
 </script>
-
-<style >
-
-</style>

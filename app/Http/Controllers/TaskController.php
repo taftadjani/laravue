@@ -14,8 +14,12 @@ class TaskController extends Controller
      */
     public function index()
     {
-        $tasks = Task::orderBy('created_at', 'DESC')->paginate(3);
-        return response()->json($tasks);
+        if(request('q')!=null){
+            $tasks['data'] = Task::where('name', 'like', '%'.request('q').'%')->get();
+            return response()->json($tasks);
+        }else{
+            return $this->refresh();
+        }
     }
 
     /**
@@ -38,8 +42,7 @@ class TaskController extends Controller
     {
         $task=Task::create($request->all());
         if($task){
-            $tasks = Task::orderBy('created_at', 'DESC')->paginate(3);
-            return response()->json($tasks);
+            return $this->refresh();
         }
     }
 
@@ -62,7 +65,8 @@ class TaskController extends Controller
      */
     public function edit($id)
     {
-        //
+        $task = Task::findOrFail($id);
+        return response()->json($task);
     }
 
     /**
@@ -74,7 +78,12 @@ class TaskController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $task=Task::findOrFail($id);
+        $task->name=$request['name'];
+        $task->save();
+        if($task){
+            return $this->refresh();
+        }
     }
 
     /**
@@ -85,6 +94,16 @@ class TaskController extends Controller
      */
     public function destroy($id)
     {
-        //
+        $task = Task::findOrFail($id);
+        if($task->delete()){
+            return $this->refresh();
+        }else{
+            return response()->json(['error'=>"Destroy methods has failed"], 425);
+        }
     }
+
+     private function refresh(){
+        $tasks = Task::orderBy('created_at', 'DESC')->paginate(3);
+        return response()->json($tasks);
+     }
 }
